@@ -1,6 +1,8 @@
 # 試した資料と、Strata が書いた Wiki
-raw/
-wiki/
+raw/*
+!raw/.gitkeep
+wiki/*
+!wiki/.gitkeep
 
 # 資料や Wiki の中身を引用している生成物・結果
 check/
