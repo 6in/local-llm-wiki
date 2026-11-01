@@ -1,0 +1,1 @@
+{"permissions": {"allow": ["command(mkdir)", "command(sips)", "command(mv)", "command(cp)", "command(ls)", "command(file)", "command(cat)", "command(head)", "command(grep)", "command(sed)"]}}

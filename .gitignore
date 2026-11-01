@@ -1,0 +1,16 @@
+# 試した資料と、Strata が書いた Wiki
+raw/
+wiki/
+
+# 資料や Wiki の中身を引用している生成物・結果
+check/
+faq/
+faq-check.json
+faq.log
+ingest.log
+check-d1*.txt
+query-*.txt
+par-*.txt
+
+__pycache__/
+.DS_Store
