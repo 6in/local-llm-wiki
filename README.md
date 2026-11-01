@@ -9,7 +9,7 @@ Andrej Karpathy の「LLM Wiki」（資料を LLM に読ませて Wiki にまと
 | 工程 | モデル | 役割 |
 |---|---|---|
 | 取り込み | Strata（Qwen3.8-Flash-Next 125B MoE, IQ3_S） | `raw/` の資料を読み、`wiki/` にページを書く |
-| 質問 | LFM3-1.7B（LM Studio） | Wiki を丸ごと読んで質問に答える |
+| 質問 | LFM3-1.7B（LM Studio） | 索引から検索ツールで必要な節だけを探して、質問に答える |
 | 点検 | d1-2B（llama.cpp） | 落ちた事実の判定と、FAQ の答え合わせ |
 
 試した環境は M4 Max（メモリ 128GB）です。
@@ -31,10 +31,13 @@ Andrej Karpathy の「LLM Wiki」（資料を LLM に読ませて Wiki にまと
 
 ```sh
 python3 scripts/ingest.py              # Strata が raw/ を読み、wiki/ にページと index.md を書く
-python3 scripts/query.py wiki          # LFM3 が wiki/ を読んで確認用の 9 問に答える（raw なら元の資料で）
+python3 scripts/ask.py "質問"          # LFM3 が索引から検索ツールで調べて答える（--test で確認用の 9 問）
+python3 scripts/query.py wiki          # 比較用：LFM3 が wiki/ を丸ごと読んで 9 問に答える（raw なら元の資料で）
 python3 scripts/check_d1.py 資料名     # 元の資料にあって Wiki に無い事実を d1 で絞り込む
 python3 scripts/faq.py                 # Wiki から FAQ を作り、元の資料で答え直して d1 で照らし合わせる
 ```
+
+`ask.py` は、LFM3 に最初は `index.md` だけを渡し、`wiki_tools.py` の検索ツール（`wiki_search` / `wiki_links` / `wiki_read` / `source_search`）を呼ばせて答えます。Wiki の検索は 2 回までで、足りなければスクリプトが質問の言葉で元の資料を 1 回だけ探してから答えさせます。
 
 `query.py` の 9 問は、試したときの資料に合わせたものです。別の資料で使うときは書き換えてください。
 
@@ -43,7 +46,9 @@ python3 scripts/faq.py                 # Wiki から FAQ を作り、元の資�
 ```
 scripts/
   ingest.py      取り込み（Strata）
-  query.py       質問（LFM3）
+  ask.py         質問（LFM3 + 検索ツール）
+  wiki_tools.py  Wiki の検索ツール（検索・リンク・節の読み出し・元の資料の検索）
+  query.py       質問の比較用（Wiki を丸ごと読ませる）
   check_d1.py    点検その 1：落ちた事実を探す（照合 + d1）。最終版
   faq.py         点検その 2：FAQ で答え合わせ（Strata + LFM3 + d1）
   check.py       点検の試行 1：LFM3 に比べさせる（見落としが多く不採用）
@@ -58,5 +63,6 @@ docs/
 ## 結果のあらまし
 
 - 取り込みは 5 本で 9.4 分。Wiki は元の資料の 4 割ほどの長さで、確認した事実 12 個のうち 11 個が残った。
+- 索引から検索ツールで答えさせると、1 問あたり 1,600〜3,500 トークンを読むだけで事実の 8 問すべてに正解した（丸ごと読ませると 2.2 万トークンで 7 問）。
 - FAQ の答え合わせは 53 件中 48 件が一致。わざと数字を書き換えた 3 件は、すべて「食い違い」として見つかった。
 - お金はかかっていません（すべてローカル）。

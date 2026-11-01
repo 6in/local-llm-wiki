@@ -13,6 +13,7 @@ ingest.log
 check-d1*.txt
 query-*.txt
 par-*.txt
+ask-*.txt
 
 __pycache__/
 .DS_Store
